@@ -1,0 +1,11 @@
+*.vo
+*.vos
+*.vok
+*.glob
+*.v.d
+*.aux
+.depend
+.lia.cache
+CONFIGURE
+# Coqpilot auxiliary files
+*_cp_aux.v
