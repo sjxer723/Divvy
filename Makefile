@@ -1,7 +1,7 @@
 CURRENT_DIR=.
 # SETS_DIR = ../sets
 
-COQBIN="C:\Coq-Platform~8.17~2023.08\bin\"
+COQBIN="/Users/jiaxin/.opam/default/bin/"
 
 -include CONFIGURE
 
@@ -20,7 +20,7 @@ DEP_FLAG = -Q $(CURRENT_DIR) Divvy
 
 # SETS_FILES=$(SETS_FILES_NAMES:%.v=$(SETS_DIR)/%.v)
 
-VCF_FILES_NAMES = SetDomain.v IndLang.v
+VCF_FILES_NAMES = SetDomain.v IndLang.v EnvyGraph.v
 
 VCF_FILES=$(VCF_FILES_NAMES:%.v=$(CURRENT_DIR)/%.v)
 
