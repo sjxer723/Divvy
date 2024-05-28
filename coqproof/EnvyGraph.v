@@ -47,10 +47,10 @@ Class ef1_properties (valuation: Agent -> (SET -> SET -> Prop)) :Prop:=
 Lemma valuation_assumptions_to_ef_properties (valuation: Agent -> (SET -> SET -> Prop))
   (H: valuation_assumptions valuation): ef1_properties valuation.
 Proof.
-  intros. split;intros.
-  + unfold ef1_for_two_bundles. left. apply v_reflexivity_prop.
-  + unfold ef1_for_two_bundles. left. apply v_monotonicity_prop;auto.
-  + unfold ef1_for_two_bundles. destruct H1.
+  intros. split;intros;unfold ef1_for_two_bundles.
+  + left. apply v_reflexivity_prop.
+  + left. apply v_monotonicity_prop;auto.
+  + destruct H1.
     * left. eapply v_transitivity_prop;[apply H1| apply H0].
     * right. destruct H1. exists x. destruct H1. split;auto.
       eapply v_transitivity_prop;[apply H2|auto].
@@ -273,11 +273,11 @@ Qed.
 
 (* If an agent is in the cycle, her utility will increase *)
 Theorem bundle_increased_after_shifting 
-    (n: nat)
-    (A: Alloc) 
-    (valuation: Agent -> (SET -> SET -> Prop)) 
-    (cycle: Cycle)
-    (length: nat)
+    {n: nat}
+    {A: Alloc} 
+    {valuation: Agent -> (SET -> SET -> Prop)}
+    {cycle: Cycle}
+    {length: nat}
     (H_valuation_assump: valuation_assumptions valuation)
     (H: @is_valid_cycle (current_envy_graph n A valuation) length cycle): 
     let g := (current_envy_graph n A valuation) in
@@ -327,13 +327,13 @@ Proof.
       rewrite H6. rewrite H7.
       eapply ef1_monotonicity_prop2.
       2:{ apply H0;auto. unfold next_agent_along_cycle. apply H. apply ub_of_mod_add_one. apply agent_index_bound. apply H. }
-      ** pose proof bundle_increased_after_shifting n A valuation cycle length H_valuation_assump H i H4.
+      ** pose proof bundle_increased_after_shifting H_valuation_assump H i H4.
         rewrite H6 in H8. auto. 
     (* Agent i is in the cycle while j is not *)
     * pose proof bundle_changed_to_next_bundle_after_shifting n A valuation cycle length H_valuation_assump H i H4.
       rewrite H6.
       eapply ef1_monotonicity_prop2.
-      ** pose proof bundle_increased_after_shifting n A valuation cycle length H_valuation_assump H i H4.
+      ** pose proof bundle_increased_after_shifting H_valuation_assump H i H4.
         rewrite H6 in H7. apply H7.
       ** pose proof unchanged_bundle_after_shifting A cycle length j H5.
         unfold g in H7;rewrite <- H7.
