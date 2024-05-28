@@ -64,8 +64,8 @@ Class envy_graph :Type :=
 }.
 
 (* From the current allocation to a envy-graph *)
-Definition current_envy_graph (n: nat) (st: Alloc) (valuation: Agent -> (SET -> SET -> Prop)) :envy_graph:=
-{| n:= n; edges := (fun i j => ~ (valuation i (st j) (st i))); |}.
+Definition current_envy_graph (n: nat) (A: Alloc) (valuation: Agent -> (SET -> SET -> Prop)) :envy_graph:=
+{| n:= n; edges := (fun i j => ~ (valuation i (A j) (A i))); |}.
 
 (* A cycle is a map from index to agent.                  *)
 (* e.g., {0 !-> Agent 1; 1 !-> Agent 2; 2 !-> Agent 3}    *)
@@ -224,17 +224,17 @@ Qed.
 
 
 (* Operation 1: shift the bundles along a cycle *)
-Definition shift_bundle `{G: envy_graph} (st: Alloc) (cycle:Cycle) (length: nat) :Alloc :=
+Definition shift_bundle `{G: envy_graph} (A: Alloc) (cycle:Cycle) (length: nat) :Alloc :=
     fun a => 
       if (existsb (fun x => (x =? a)) (cycle_to_list cycle length)) then 
-        st (next_agent_along_cycle cycle length a)
-      else st a.
+        A (next_agent_along_cycle cycle length a)
+      else A a.
 
 (* If an agent is not in the cycle, her bundle will not change after shifting *)
-Theorem unchanged_bundle_after_shifting {G: envy_graph} (st: Alloc) (cycle:Cycle) (length: nat):
+Theorem unchanged_bundle_after_shifting {G: envy_graph} (A: Alloc)(cycle:Cycle) (length: nat):
     forall a: Agent, 
       ~ (In a (cycle_to_list cycle length)) -> 
-      (st a) = (shift_bundle st cycle length a).
+      (A a) = (shift_bundle A cycle length a).
 Proof.
     intros;unfold shift_bundle.
     destruct (@existsb _  (fun x => (x =? a)) (cycle_to_list cycle length)) eqn:H1.
@@ -251,15 +251,15 @@ Qed.
 (* If an agent is in the cycle, her bundle will be changed to the next bundle *)
 Lemma bundle_changed_to_next_bundle_after_shifting
     (n: nat)
-    (st: Alloc) 
+    (A: Alloc)
     (valuation: Agent -> (SET -> SET -> Prop)) 
     (cycle: Cycle)
     (length: nat)
     (H_valuation_assump: valuation_assumptions valuation)
-    (H: @is_valid_cycle (current_envy_graph n st valuation) length cycle): 
-    let g := (current_envy_graph n st valuation) in
+    (H: @is_valid_cycle (current_envy_graph n A valuation) length cycle): 
+    let g := (current_envy_graph n A valuation) in
     forall a: Agent, (In a (cycle_to_list cycle length)) -> 
-         (@shift_bundle (current_envy_graph n st valuation) st cycle length a) = (st (@next_agent_along_cycle g cycle length a)).
+         (@shift_bundle (current_envy_graph n A valuation) A cycle length a) = (A (@next_agent_along_cycle g cycle length a)).
 Proof.
   intros. unfold shift_bundle.
   destruct (existsb (fun x : nat => x =? a) (cycle_to_list cycle length)) eqn:H_in.
@@ -274,22 +274,22 @@ Qed.
 (* If an agent is in the cycle, her utility will increase *)
 Theorem bundle_increased_after_shifting 
     (n: nat)
-    (st: Alloc) 
+    (A: Alloc) 
     (valuation: Agent -> (SET -> SET -> Prop)) 
     (cycle: Cycle)
     (length: nat)
     (H_valuation_assump: valuation_assumptions valuation)
-    (H: @is_valid_cycle (current_envy_graph n st valuation) length cycle): 
-    let g := (current_envy_graph n st valuation) in
+    (H: @is_valid_cycle (current_envy_graph n A valuation) length cycle): 
+    let g := (current_envy_graph n A valuation) in
     forall a: Agent, (In a (cycle_to_list cycle length)) -> 
-        valuation a (st a) (@shift_bundle g st cycle length a).
+        valuation a (A a) (@shift_bundle g A cycle length a).
 Proof.
   intros. unfold shift_bundle.
   destruct (existsb (fun x : nat => x =? a) (cycle_to_list cycle length)) eqn:H_in.
   + pose proof @agent_is_adjacent_to_next_agent_along_cycle g cycle length a H H0.
     simpl in H1.
     destruct H_valuation_assump.
-    pose proof v_total_order0 a (st a) (st (@next_agent_along_cycle g cycle length a)).
+    pose proof v_total_order0 a (A a) (A (@next_agent_along_cycle g cycle length a)).
     tauto.
   + pose proof @existsb_exists _ (fun x => (x =? a)) (cycle_to_list cycle length).
     assert(exists x : nat, In x (cycle_to_list cycle length) /\ (fun x0 : nat => x0 =? a) x = true).
@@ -302,15 +302,15 @@ Qed.
 (* If the original allocation is EF1, the allocation after shifting bundle is still EF1 *)
 Theorem ef1_during_bundle_shifting
     (n: nat) 
-    (st: Alloc) 
+    (A: Alloc) 
     (valuation: Agent -> (SET -> SET -> Prop)) 
     (cycle: Cycle)
     (length: nat)
     (H_valuation_assump: valuation_assumptions valuation)
-    (H: @is_valid_cycle (current_envy_graph n st valuation) length cycle):
-    let g:= (current_envy_graph n st valuation) in 
-      ef1 n st valuation ->
-      ef1 n (@shift_bundle g st cycle length) valuation.
+    (H: @is_valid_cycle (current_envy_graph n A valuation) length cycle):
+    let g:= (current_envy_graph n A valuation) in 
+      ef1 n A valuation ->
+      ef1 n (@shift_bundle g A cycle length) valuation.
 Proof.
   intros.
   pose proof classic.
@@ -322,33 +322,33 @@ Proof.
   unfold g.
   + destruct H5.
     (* Both agent i and j are in the cycle *)
-    * pose proof bundle_changed_to_next_bundle_after_shifting n st valuation cycle length H_valuation_assump H i H4.      
-      pose proof bundle_changed_to_next_bundle_after_shifting n st valuation cycle length H_valuation_assump H j H5.
+    * pose proof bundle_changed_to_next_bundle_after_shifting n A valuation cycle length H_valuation_assump H i H4.      
+      pose proof bundle_changed_to_next_bundle_after_shifting n A valuation cycle length H_valuation_assump H j H5.
       rewrite H6. rewrite H7.
       eapply ef1_monotonicity_prop2.
       2:{ apply H0;auto. unfold next_agent_along_cycle. apply H. apply ub_of_mod_add_one. apply agent_index_bound. apply H. }
-      ** pose proof bundle_increased_after_shifting n st valuation cycle length H_valuation_assump H i H4.
+      ** pose proof bundle_increased_after_shifting n A valuation cycle length H_valuation_assump H i H4.
         rewrite H6 in H8. auto. 
     (* Agent i is in the cycle while j is not *)
-    * pose proof bundle_changed_to_next_bundle_after_shifting n st valuation cycle length H_valuation_assump H i H4.
+    * pose proof bundle_changed_to_next_bundle_after_shifting n A valuation cycle length H_valuation_assump H i H4.
       rewrite H6.
       eapply ef1_monotonicity_prop2.
-      ** pose proof bundle_increased_after_shifting n st valuation cycle length H_valuation_assump H i H4.
+      ** pose proof bundle_increased_after_shifting n A valuation cycle length H_valuation_assump H i H4.
         rewrite H6 in H7. apply H7.
-      ** pose proof unchanged_bundle_after_shifting st cycle length j H5.
+      ** pose proof unchanged_bundle_after_shifting A cycle length j H5.
         unfold g in H7;rewrite <- H7.
         apply H0;auto.
   + destruct H5.
     (* Agent i is not in the cycle while j is *)
-    * pose proof unchanged_bundle_after_shifting st cycle length i H4.
-      pose proof bundle_changed_to_next_bundle_after_shifting n st valuation cycle length H_valuation_assump H j H5.
+    * pose proof unchanged_bundle_after_shifting A cycle length i H4.
+      pose proof bundle_changed_to_next_bundle_after_shifting n A valuation cycle length H_valuation_assump H j H5.
       rewrite <- H6.
       unfold g; rewrite H7. 
       apply H0;auto. 
       unfold next_agent_along_cycle. apply H. apply ub_of_mod_add_one. apply agent_index_bound. apply H.
     (* Both agent i and j are not in the cycle *)
-    * pose proof unchanged_bundle_after_shifting st cycle length i H4.
-      pose proof unchanged_bundle_after_shifting st cycle length j H5.
+    * pose proof unchanged_bundle_after_shifting A cycle length i H4.
+      pose proof unchanged_bundle_after_shifting A cycle length j H5.
       rewrite <- H6, <- H7;auto.
 Qed.
 
