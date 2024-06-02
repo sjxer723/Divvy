@@ -7,6 +7,9 @@
 (define n 2)
 (define m 4)
 
+(define (v0 a-val-matrix a-set) (valuation a-val-matrix 0 a-set m))
+(define (v1 a-val-matrix a-set) (valuation a-val-matrix 1 a-set m))
+
 (define even-cut-alloc
     (for/list ([i (in-range n)])
         (for/list ([j (in-range m)])
@@ -26,8 +29,8 @@
     ))
 
 (define (i-cut-u-choose a-val-matrix an-alloc)
-    (if (<= (valuation a-val-matrix 1 (list-ref an-alloc 0) m) 
-            (valuation a-val-matrix 1 (list-ref an-alloc 1) m))
+    (if (<= (v1 a-val-matrix (list-ref an-alloc 0)) 
+            (v1 a-val-matrix (list-ref an-alloc 1)))
         an-alloc
         (swap-bundle an-alloc 0 1)
     )
