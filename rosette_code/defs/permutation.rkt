@@ -13,6 +13,7 @@
 ; m items
 ;;; (define m 10)
 
+;; a permutation maps an index i to the item with i-th smallest value
 (define (permutation len)
   (for/list ([i (range len)])
     (define-symbolic* loc integer?)
@@ -49,16 +50,16 @@
 )
 
 ;;; Given a permutation σ,
-;;;     σ(j) < σ(k) -> v_i(σ(j)) < v_i(σ(k))
+;;;     j < k -> v_i(σ(j)) < v_i(σ(k))
 (define (nondecreasing-value-by-perm? a-val-matrix a-perm i m)
     (andmap
         (λ (j)
             (andmap
                 (λ (k) 
                     (or 
-                        (>= (list-ref a-perm j) (list-ref a-perm k))
-                        (< (list-ref (list-ref a-val-matrix i) j)
-                            (list-ref (list-ref a-val-matrix i) k))
+                        (>= j k)
+                        (< (list-ref (list-ref a-val-matrix i) (list-ref a-perm j))
+                            (list-ref (list-ref a-val-matrix i) (list-ref a-perm k)))
                     )
                     )
                 (range m)
